@@ -1,0 +1,24 @@
+<PAMDataset>
+  <Subdataset name="CLTYPE">
+    <PAMDataset>
+      <PAMRasterBand band="1">
+        <Histograms>
+          <HistItem>
+            <HistMin>-0.45</HistMin>
+            <HistMax>9.449999999999999</HistMax>
+            <BucketCount>10</BucketCount>
+            <IncludeOutOfRange>0</IncludeOutOfRange>
+            <Approximate>1</Approximate>
+            <HistCounts>394194|131720|224644|93363|130404|105599|39566|157387|129886|19899</HistCounts>
+          </HistItem>
+        </Histograms>
+        <Metadata>
+          <MDI key="STATISTICS_MAXIMUM">9</MDI>
+          <MDI key="STATISTICS_MEAN">3.1317803375991</MDI>
+          <MDI key="STATISTICS_MINIMUM">0</MDI>
+          <MDI key="STATISTICS_STDDEV">2.8594570913235</MDI>
+        </Metadata>
+      </PAMRasterBand>
+    </PAMDataset>
+  </Subdataset>
+</PAMDataset>
