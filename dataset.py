@@ -44,10 +44,10 @@ class tiledataset(data.Dataset):
 
 
     def __len__(self):
-        return len(self.img)
+        return len(self.file_names)
 
     def filelist(self):
-        return self.img
+        return self.file_names
 
 class dataset(data.Dataset):
     def __init__(self, file_path=None):
