@@ -94,7 +94,7 @@ class OrigImgdataset(Dataset):
         data_y = torch.LongTensor(data_y)
         return data_x, data_y 
     
-class preddataset(data.Dataset):
+class preddataset(Dataset):
     def __init__(self, file_path=None):
         super(dataset, self).__init__()
         self.img = file_path
