@@ -245,7 +245,7 @@ logging.basicConfig(
 # 
 #     return args
 
-def test_loader(files_list,args):
+def test_loader(files_list):
 #     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     start = datetime.now()
     ds = dataset(files_list)
@@ -254,7 +254,7 @@ def test_loader(files_list,args):
         sampler=data.SequentialSampler(ds),
         num_workers=config.workers)
 
-    prefetcher = data_prefetcher(data_loader, args.gpu)
+    prefetcher = data_prefetcher(data_loader, torch.cuda.is_available())
     with torch.no_grad():
 #         inputs, targets, index = prefetcher.next()
         inputs, index = prefetcher.next()
