@@ -40,26 +40,6 @@ class Imgloader(Dataset):
         idx_x = torch.FloatTensor(np.array(self.x[idx]))
         idx_y = torch.LongTensor(np.array(self.y[idx]))
         return idx_x, idx_y
-    
-class dataset(data.Dataset):
-    def __init__(self, file_path=None):
-        super(dataset, self).__init__()
-        self.img = file_path
-#         self.img = [x.replace('/gt/', '/imgs/') for x in self.gt]
-
-    def __getitem__(self, index):
-        tiffile, xoff, yoff = self.img[index]
-        ds = gdal.Open(tiffile)
-        fy4a_tile_data = ds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
-        fy4a_tile_data[np.isnan(fy4a_tile_data)] = 0
-        input = torch.from_numpy(fy4a_tile_data)
-        return input, index
-
-    def __len__(self):
-        return len(self.img)
-
-    def filelist(self):
-        return self.img
 
 class TileImgloader(Dataset):
     def __init__(self, file_path=None):
