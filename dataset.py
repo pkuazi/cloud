@@ -7,12 +7,12 @@ from config import config
 class tiledataset(data.Dataset):
     def __init__(self, file_names=None):
         self.file_names = file_names
-        self.shuffle = shuffle
+#         self.shuffle = shuffle
 #         self.img = [x.replace('/gt/', '/imgs/') for x in self.gt]
 
     def __getitem__(self, idx):
-        if self.shuffle:
-            idx = random.sample(range(len(self.file_names)), 1)[0]
+#         if self.shuffle:
+#             idx = random.sample(range(len(self.file_names)), 1)[0]
         filename= self.file_names[idx]
         imgfile = os.path.join(config.tile_img_path, filename)
         gtfile = os.path.join(config.tile_gt_path, filename)
