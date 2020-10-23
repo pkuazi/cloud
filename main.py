@@ -136,7 +136,7 @@ def test_loader(files_list):
     ds = dataset(files_list)
     data_loader = DataLoader(
         ds, batch_size=config.batch_size,
-        sampler=data.SequentialSampler(ds),
+#         sampler=data.SequentialSampler(ds),
         num_workers=config.workers)
 
     prefetcher = data_prefetcher(data_loader, torch.cuda.is_available())
