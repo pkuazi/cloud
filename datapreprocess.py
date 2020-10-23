@@ -63,7 +63,11 @@ def preprocessfy4a(fy4a_file, fy4a_dst):
     del dst_ds
 
 def preprocessh08(h08file, h08_dst):
-    ds = xr.open_dataset(h08file)
+    try:
+        ds = xr.open_dataset(h08file)
+    except:
+        print('error')
+        sys.exit()
     cltype = ds.CLTYPE.data
     Lon = ds.longitude.data
     Lat = ds.latitude.data

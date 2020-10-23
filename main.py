@@ -99,7 +99,7 @@ def train_my_model(train_loader, vali_loader, model_flag=0):
     return wyl_model
 
 
-def main():
+def model_training():
     train_test_split_ratio = 0.8
     train_vali_split_ratio = 0.7
 
@@ -180,6 +180,65 @@ def main():
     print(pred_y)
     save_pred_imgs(pred_y, test_file_names)
 
+def test_loader(files_list):
+    print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
+    start = datetime.now()
+    ds = dataset(files_list)
+    data_loader = data.DataLoader(
+        ds, batch_size=args.bs,
+        sampler=data.SequentialSampler(ds),
+        num_workers=args.nproc, pin_memory=args.gpu, drop_last=False)
+
+    prefetcher = data_prefetcher(data_loader, args.gpu)
+    with torch.no_grad():
+#         inputs, targets, index = prefetcher.next()
+        inputs, index = prefetcher.next()
+        k = 0
+        while (inputs is not None):
+            inputs = torch.tensor(inputs, dtype=torch.float32)
+            inputs, index = prefetcher.next()
+            k += 1
+    end = datetime.now()
+    lapse = end-start
+    print('[%s] End loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
+    return lapse
+
+def gen_file_list(geotif):
+    file_list = []
+    ds = gdal.Open(geotif)
+    xsize, ysize = ds.RasterXSize, ds.RasterYSize
+    off_list = gen_tiles_offs(xsize, ysize, config.BLOCK_SIZE,config.OVERLAP_SIZE)
+   
+    for xoff,yoff in off_list:    
+        file_list.append((geotif, xoff, yoff))     
+    return file_list
+
+def main():
+    tifs_dir = '/data/data/cloud_tif/img'
+    tiles_dir = '/data/data/fy4a_tiles'
+    
+#     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
+    st = datetime.now()
+    files_offs_list=[]
+    for root, dirs, files in os.walk(tifs_dir):
+        files = list(filter(lambda x: x.endswith(".tif") and '0330' in x, files))
+        for filename in files:
+            file = os.path.join(root, filename)
+            tif_list = gen_file_list(file)
+            files_offs_list.append(tif_list)
+    et = datetime.now()
+    
+    print('the number of file+offs is %s, spend %s'%(len(files_offs_list)),et-st)
+    lapse = test_loader(files_offs_list)
+    print('Loading dataset from original image using: %s.' % (lapse))
+    
+    st = datetime.now()
+    tiles=os.listdir(tiles_dir)
+    tiles_list = list(filter(lambda x: x.endswith(".tif") and '0330' in x, tiles))
+    et = datetime.now()
+    print('the number of tiles is %s,, spend %s'%(len(tiles_list)),et-st)
+    lapse1 = test_loader(tiles_list)
+    print('Loading dataset from tiles using: %s.' % (lapse1))
 
 if __name__ == '__main__':
     main()
