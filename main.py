@@ -133,7 +133,7 @@ logging.basicConfig(
 def test_loader(files_list):
 #     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     start = datetime.now()
-    ds = tiledataset(files_list)
+    ds = tiledataset(files_list,shuffle=False)
     data_loader = DataLoader(
         ds, batch_size=config.batch_size,
 #         sampler=data.SequentialSampler(ds),
