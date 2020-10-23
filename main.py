@@ -140,15 +140,15 @@ def test_loader(files_list):
         num_workers=config.workers)
 
     prefetcher = tiledata_prefetcher(data_loader, torch.cuda.is_available())
-    with torch.no_grad():
-#         inputs, targets, index = prefetcher.next()
-        inputs, index = prefetcher.next()
-        k = 0
-        while (inputs is not None):
-            inputs = torch.tensor(inputs, dtype=torch.float32)
-            inputs, index = prefetcher.next()
-            print(k)
-            k += 1
+    inputs, targets, index = prefetcher.next()
+    k = 0
+    while (inputs is not None):
+#             inputs = torch.tensor(inputs, dtype=torch.float32)
+        inputs, targets, index = prefetcher.next()
+        img_count = len(inputs)
+#         print(k)
+#         k += 1
+           
     end = datetime.now()
     lapse = end - start
 #     print('[%s] End loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
@@ -220,7 +220,6 @@ def main():
     files_offs_list = []
     for root, dirs, files in os.walk(tifs_dir):
         files = list(filter(lambda x: x.endswith(".tif"), files))
-        h08date + '_' + h08time + '.tif'
         for filename in files:
             time = filename.split('_')[1].split('.')[0]
             if time == '0330':
