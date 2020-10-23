@@ -13,8 +13,8 @@ import argparse
 from utils.fy4a import AGRI_L1,read_fy4a_arr
 from utils.gen_tiles_offs import gen_tiles_offs
 from utils.epsg2wkt import epsg2wkt
-from dataset import dataset
-from prefetcher import data_prefetcher
+from modules.models import preddataset,predprefetcher
+# from prefetcher import data_prefetcher
 # from utils.FWIoU import Frequency_Weighted_Intersection_over_Union
 
 BLOCK_SIZE = 256
@@ -172,7 +172,7 @@ def gen_file_list(geotif):
 def predict(args,files_list):
 #     with open(args.file_list, 'r') as f:
 #         files = f.read().splitlines()
-    ds = dataset(files_list)
+    ds = preddataset(files_list)
     data_loader = data.DataLoader(
         ds, batch_size=args.bs,
         sampler=data.SequentialSampler(ds),
@@ -199,7 +199,7 @@ def predict(args,files_list):
     if args.gpu:
         pred = pred.cuda()
         labels = labels.cuda()
-    prefetcher = data_prefetcher(data_loader, args.gpu)
+    prefetcher = predprefetcher(data_loader, args.gpu)
     with torch.no_grad():
 #         inputs, targets, index = prefetcher.next()
         inputs, index = prefetcher.next()

@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader
 # import cv2
 # from modules.models import My_Model
 # from modules.models import ImgloaderPostdam_single_channel, ImgloaderPostdam
-from modules.models import OrigImgloader
+from modules.models import OrigImgdataset
 from dataset import dataset,tiledataset
 from prefetcher import data_prefetcher,tiledata_prefetcher
 # from modules.fcn import FCN16, FCN8
@@ -154,12 +154,30 @@ def test_loader(files_list):
     lapse = end - start
 #     print('[%s] End loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     return lapse
+def tileimgloadtest(train_files_names):
+    # 构造训练loader
+    start = datetime.now()
+    train_set = TileImgdataset(config, train_files_names,  shuffle=False)   
+    train_loader = DataLoader(
+        train_set,
+        batch_size=config.batch_size,
+#         shuffle=True,
+        num_workers=config.workers,
+    )
+    k = 0
+    # 分批训练样本
+    for i, (data_x, data_y) in enumerate(train_loader, 1):
+        img_count = len(data_y)
 
+    end = datetime.now()
+    lapse = end - start
+#     print('[%s] End loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
+    return lapse
 
 def origimgloadtest(train_files_names):
     # 构造训练loader
     start = datetime.now()
-    train_set = OrigImgloader(config, train_files_names,  shuffle=False)   
+    train_set = OrigImgdataset(config, train_files_names,  shuffle=False)   
     train_loader = DataLoader(
         train_set,
         batch_size=config.batch_size,
@@ -212,7 +230,8 @@ def main():
     tiles_list = list(filter(lambda x: x.endswith(".tif") and x.split('_')[1]=='0330' , tiles))
     et = datetime.now()
     print('the number of tiles is %s, spend %s' % (len(tiles_list), (et - st)))
-    lapse1 = test_loader(tiles_list)
+#     lapse1 = test_loader(tiles_list)
+    lapse1 =tileimgloadtest(tiles_list)
     print('Loading dataset from tiles using: %s.' % (lapse1))
     
     

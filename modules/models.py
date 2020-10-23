@@ -28,7 +28,7 @@ random.seed(20180122)
 np.random.seed(20180122)
 
 
-class Imgloader(Dataset):
+class ImgDataset(Dataset):
     def __init__(self, x, y):
         self.x = x
         self.y = np.argmax(y, axis=1)  # 将label改装成(-1,512,512)
@@ -41,8 +41,8 @@ class Imgloader(Dataset):
         idx_y = torch.LongTensor(np.array(self.y[idx]))
         return idx_x, idx_y
 
-class TileImgloader(Dataset):
-    def __init__(self, file_path=None):
+class TileImgdataset(Dataset):
+    def __init__(self, config, files_names, shuffle=False):
         random.seed(20201023)
         self.conf = config
         self.img_size_x = config.img_rows
@@ -66,7 +66,7 @@ class TileImgloader(Dataset):
     def __len__(self):
         return len(self.file_names)
         
-class OrigImgloader(Dataset):
+class OrigImgdataset(Dataset):
     def __init__(self, config, files_names, shuffle=False):
         logging.info("ImgloaderPostdam->__init__->begin:")
         random.seed(20201023)
@@ -94,137 +94,58 @@ class OrigImgloader(Dataset):
         data_y = torch.LongTensor(data_y)
         return data_x, data_y 
     
-          
+class preddataset(data.Dataset):
+    def __init__(self, file_path=None):
+        super(dataset, self).__init__()
+        self.img = file_path
+#         self.img = [x.replace('/gt/', '/imgs/') for x in self.gt]
 
-class ImgloaderPostdam(Dataset):
-    rgb2classid_map = {
-        (255, 255, 255): 0,  # "white", 背景
-        (255, 0, 0): 1,  # "red",
-        (0, 0, 255): 2,  # "blue", 房子
-        (0, 255, 255): 3,  # "cyan", 土地
-        (0, 255, 0): 4,  # "green", 草地
-        (255, 255, 0): 5,  # "yello" 汽车
-    }
+    def __getitem__(self, index):
+        tiffile, xoff, yoff = self.img[index]
+        ds = gdal.Open(tiffile)
+        fy4a_tile_data = ds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
+        fy4a_tile_data[np.isnan(fy4a_tile_data)] = 0
+        input = torch.from_numpy(fy4a_tile_data)
 
-    def __init__(self, config, files_names, return_len=None, enhance=False, shuffle=False):
-        logging.info("ImgloaderPostdam->__init__->begin:")
-        random.seed(20180416)
-        self.conf = config
-        self.img_size_x = config.img_rows
-        self.img_size_y = config.img_cols
-        self.shuffle = shuffle
-        self.file_names = files_names
-        self.enhance = enhance
-        self.return_len = return_len
-        self.data_set = []
-
-    def get_data_enhancement_set(self, idx=None):
-        need_enhan_files = [self.file_names[idx]]
-        img_files_path = list(map(lambda x: os.path.join(self.conf.data_path, "img", x), need_enhan_files))
-        label_files_path = list(map(lambda x: os.path.join(self.conf.data_path, "label", x), need_enhan_files))
-        data_set = list(
-            map(lambda x, y: (1.0 * cv2.imread(x,-1) / 255.0, cv2.imread(y,-1)), img_files_path, label_files_path))
-        # use label_id picture directly, no need to change rgb to id anymore
-#        data_set = list(map(lambda x:(x[0], x[1]), data_set))
-        data_set = list(map(lambda x: (x[0], self.make_label(x[1])), data_set))
-        if self.enhance:
-            list(map(lambda x: self.img_random_transfer(x[0], x[1]), data_set))
-        return list(map(lambda x: self.resize_sample(x[0], x[1]), data_set))
-#        return list(map(lambda x:(x[0],x[1]), data_set))
+        return input, index
 
     def __len__(self):
-        return min(self.return_len, len(self.file_names))
+        return len(self.img)
 
-    def __getitem__(self, idx):
-        if self.shuffle:
-            idx = random.sample(range(len(self.file_names)), 1)[0]
-        data = self.get_data_enhancement_set(idx=idx)
-        data_x = np.transpose(data[0][0], (2, 0, 1))
-        data_x = torch.FloatTensor(data_x)
-        data_y = np.argmax(data[0][1], axis=2)
-        data_y = torch.LongTensor(data_y)
-        return data_x, data_y
+    def filelist(self):
+        return self.img         
 
-    def make_label(self, label_img):
-        img_size_x, img_size_y = label_img.shape[:2]
-        new_label = np.zeros((img_size_x, img_size_y, self.conf.class_num))
-        for i in range(img_size_x):
-            for j in range(img_size_y):
-                key = tuple(label_img[i, j, :])
-                class_id = self.rgb2classid_map.get(key, 0)
-                new_label[i, j, class_id] = 1
-        return new_label
+class predprefetcher():
+    def __init__(self, loader, use_cuda=True):
+        self.loader = iter(loader)
+        self.use_cuda = use_cuda
+        if self.use_cuda:
+            self.stream = torch.cuda.Stream()
+        self.preload()
 
-    def resize_sample(self, img, label):
-        new_x, new_y = self.conf.img_rows, self.conf.img_cols
-        new_img = cv2.resize(img, (new_x, new_y))
-        new_label = cv2.resize(label, (new_x, new_y))
-        for i in range(new_x):
-            for j in range(new_y):
-                class_id = np.argmax(new_label[i, j, :])
-                new_label[i, j, :] = 0
-                new_label[i, j, class_id] = 1
-        assert np.sum(new_label) == (new_x * new_y), "sum(new_label) != %d*%d" % (new_x, new_y)
-        return new_img, new_label
+    def preload(self):
+        try:
+#             self.next_inputs, self.next_targets, self.next_index = next(self.loader)
+            self.next_inputs, self.next_index = next(self.loader)
+        except StopIteration:
+            self.next_inputs = None
+            self.next_targets = None
+            self.next_index = None
+            return
+        if self.use_cuda:
+            with torch.cuda.stream(self.stream):
+                self.next_inputs = self.next_inputs.cuda(non_blocking=True)
+                self.next_targets = self.next_targets.cuda(non_blocking=True)
 
-    # 一张图像随机变换
-    def img_random_transfer(self, img, label):
-        if img.shape[:2] != label.shape[:2]:
-            logging.warning("ImgloaderPostdam->img_random_transfer:img.shape[:2] != label.shape[:2]")
-            return img, label
-        old_rows, old_cols = img.shape[:2]
-        # label 为一通道图像
-        if random.randint(0, 1) == 1:
-            # 随机,不翻转, 水平, 上下, 水平+上下
-            flip_flag = random.randint(-1, 1)
-            img = cv2.flip(img, flip_flag)
-            label = cv2.flip(label, flip_flag)
-        shift_style = random.randint(0, 2)  # 闭区间
-        if shift_style == 1:  # 平移变换
-            x_move = random.randint(-100, 100)
-            y_move = random.randint(-100, 100)
-            M = np.float32([[1, 0, x_move], [0, 1, y_move]])  # 平移矩阵1：向x正方向平移25，向y正方向平移50
-        elif shift_style == 2:  # 旋转变换
-            angle = random.randint(-180, 180)
-            M = cv2.getRotationMatrix2D((old_cols / 2, old_rows / 2), angle, 1)  # 最后一个参数为缩放因子
-        elif shift_style == 3:  # 仿射变换 (多分类任务不应有仿射)
-            pts1 = np.float32([[50, 50], [200, 50], [50, 200]])
-            pts2 = np.float32([[10, 100], [200, 50], [100, 250]])
-            M = cv2.getAffineTransform(pts1, pts2)
-        shift = np.concatenate((img, label), axis=2)
-        if shift_style != 0:
-            shift = cv2.warpAffine(shift, M, (old_rows, old_cols))  # 需要图像、变换矩阵、变换后的大小
-        new_img, new_label = shift[:, :, :3], shift[:, :, 3:]
-        new_img, new_label = self.resize_sample(new_img, new_label)
-        return new_img, new_label
-
-
-
-class ImgloaderPostdam_single_channel(ImgloaderPostdam):
-    def __init__(self, config, files_names, return_len=None, enhance=False, shuffle=False):
-        super(ImgloaderPostdam_single_channel,self).__init__(config, files_names, return_len, enhance, shuffle)
-
-    def __getitem__(self, idx):
-        data = self.get_data_set(idx=idx)
-        data_x = np.transpose(data[0][0], (2, 0, 1))
-        data_x = torch.FloatTensor(data_x)
-        # data_y = np.argmax(data[0][1], axis=2)
-        # print(data[0][1])
-        data_y = torch.LongTensor(data[0][1])
-        # print(data_y.size())
-        # exit()
-        assert (not data_x is None) and (not data_y is None), "ImgloaderPostdam_single_channel data has None."
-        return data_x, data_y
-
-    def get_data_set(self, idx=None):
-        need_enhan_files = [self.file_names[idx]]
-        img_files_path = list(map(lambda x: os.path.join(self.conf.data_path, "img", x), need_enhan_files))
-        label_files_path = list(map(lambda x: os.path.join(self.conf.data_path, "gt", x), need_enhan_files))
-        fun = lambda x, y: (1.0 * cv2.imread(x, -1) / 255.0, cv2.imread(y, -1))
-        data_set = list(map(fun, img_files_path, label_files_path))
-        return data_set
-
-
+    def next(self):
+        if self.use_cuda:
+            torch.cuda.current_stream().wait_stream(self.stream)
+        inputs = self.next_inputs
+#         targets = self.next_targets
+        index = self.next_index
+        self.preload()
+#         return inputs, targets, index
+        return inputs, index
 
 class My_Model():
     def __init__(self, config, base_model):
