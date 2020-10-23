@@ -11,12 +11,13 @@ np.random.seed(20180122)
 
 import torch
 from torch.utils.data import DataLoader
-import tifffile as tiff
-import cv2
-from modules.models import My_Model
-from modules.models import ImgloaderPostdam_single_channel, ImgloaderPostdam
-from modules.fcn import FCN16, FCN8
-from utils import moveFileto, removeDir
+# import tifffile as tiff
+# import cv2
+# from modules.models import My_Model
+# from modules.models import ImgloaderPostdam_single_channel, ImgloaderPostdam
+from modules.models import OrigImgloader
+# from modules.fcn import FCN16, FCN8
+# from utils import moveFileto, removeDir
 from config import config
 
 log_path = "./logs/"
@@ -27,160 +28,160 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-classid2rgb_map = {
-    0: [255, 255, 255],  # "white", 背景
-    1: [255, 0, 0],  # "red",
-    2: [0, 0, 255],  # "blue", 房子
-    3: [0, 255, 255],  # "cyan", 土地
-    4: [0, 255, 0],  # "green", 草地
-    5: [255, 255, 0],  # "yello" 汽车
-}
-
-
-def label2rgb(pred_y):
-    # print(set(list(pred_y.reshape(-1))))
-    rgb_img = np.zeros((pred_y.shape[0], pred_y.shape[1], 3))
-    for i in range(len(pred_y)):
-        for j in range(len(pred_y[0])):
-            rgb_img[i][j] = classid2rgb_map.get(pred_y[i][j], [255, 255, 255])
-    return rgb_img.astype(np.uint8)
-
-
-# 将矩阵保存成图片
-def save_pred_imgs(test_y, files_name):
-    # print("array to image", test_y.shape)
-    assert test_y.shape[0] == len(files_name), "len(test_files_name) != len(test_y)"
-    if not os.path.exists(config.test_pred_path):
-        os.makedirs(config.test_pred_path)  # 存放模型的地址
-    else:
-        removeDir(config.test_pred_path)
-        os.makedirs(config.test_pred_path)  # 存放模型的地址
-    for i in range(test_y.shape[0]):
-        img = label2rgb(test_y[i])
-        dump_file_name = config.test_pred_path + "/%s" % (files_name[i])
-        # tiff.imsave(dump_file_name, img)
-        cv2.imwrite(dump_file_name, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-#        cv2.imwrite(dump_file_name, img)
-
-
-def save_test_imgs_and_gt(imgs_path, gt_path):
-    print(config.test_ori_imgs_dump_path)
-    if not os.path.exists(config.test_ori_imgs_dump_path):
-        os.makedirs(config.test_ori_imgs_dump_path)
-    else:
-        print('not exist')
-        removeDir(config.test_ori_imgs_dump_path)
-        os.makedirs(config.test_ori_imgs_dump_path)  # 存放模型的地址
-    for img_path in imgs_path:
-        file_name = os.path.split(img_path)[-1]
-        moveFileto(img_path, os.path.join(config.test_ori_imgs_dump_path, file_name))
-
-    if not os.path.exists(config.test_gt_dump_path):
-        os.makedirs(config.test_gt_dump_path)
-    else:
-        removeDir(config.test_gt_dump_path)
-        os.makedirs(config.test_gt_dump_path)  # 存放模型的地址
-    for img_path in gt_path:
-        file_name = os.path.split(img_path)[-1]
-        moveFileto(img_path, os.path.join(config.test_gt_dump_path, file_name))
-
-
-# input_dim #需要构建的global名字
-def train_my_model(train_loader, vali_loader, model_flag=0):
-    print("begin to get_model_predict ......")
-    model_path = os.path.join(config.model_path, "Unet_fold_%d.h5" % (model_flag))
-    if os.path.exists(model_path): os.remove(model_path); print("Remove file %s." % (model_path))
-    # base_model = FCN8(config.class_num)
-    base_model = FCN16(config.in_channels, config.class_num)
-    # base_model = FCN8(3)
-    wyl_model = My_Model(config, base_model)
-    if os.path.exists(model_path):
-        wyl_model.model = torch.load(model_path)
-    else:
-        wyl_model.train(train_loader, vali_loader, config.epochs, early_stop=config.early_stop)
-        torch.save(wyl_model.model, model_path)
-    return wyl_model
-
-
-def model_training():
-    train_test_split_ratio = 0.8
-    train_vali_split_ratio = 0.7
-
-    files_root = os.path.join(config.data_path, "img")
-    file_names = os.listdir(files_root)
-    file_names = list(filter(lambda x: ".tif" in x, file_names))
-
-    # shuffle原文件
-    random.seed(20180122)
-    file_names = random.sample(file_names, len(file_names))
-
-    trian_file_names = file_names[:int(len(file_names) * train_test_split_ratio)]
-    test_file_names = file_names[int(len(file_names) * train_test_split_ratio):]
-
-    vali_file_names = trian_file_names[int(len(trian_file_names) * train_vali_split_ratio):]
-    trian_file_names = trian_file_names[:int(len(trian_file_names) * train_vali_split_ratio)]
-
-    img_files_path = list(map(lambda x: os.path.join(config.data_path, "img", x), test_file_names))
-    gt_files_path = list(map(lambda x: os.path.join(config.data_path, "label", x), test_file_names))
-    save_test_imgs_and_gt(img_files_path, gt_files_path)
-
-    # 构造训练loader
-    train_set = ImgloaderPostdam_single_channel(
-        config,
-        trian_file_names,
-        return_len=config.train_batch_num,
-       # enhance=True,
-        enhance=False,
-        shuffle=True,
-    )
-    train_loader = DataLoader(
-        train_set,
-        batch_size=config.batch_size,
-        shuffle=True,
-        num_workers=config.workers,
-    )
-
-    # 构造验证loader
-    vali_set = ImgloaderPostdam_single_channel(
-        config,
-        vali_file_names,
-        return_len=config.vali_batch_num,
-        enhance=False,
-        shuffle=False,
-    )
-    vali_loader = DataLoader(
-        vali_set,
-        batch_size=config.batch_size,
-        shuffle=True,
-        num_workers=config.workers,
-    )
-    
-    # 构造测试loader
-    test_set = ImgloaderPostdam_single_channel(
-        config,
-        test_file_names,
-        return_len=len(test_file_names),
-        enhance=False,
-        shuffle=False,
-    )
-    test_loader = DataLoader(
-        test_set,
-        batch_size=config.batch_size,
-        shuffle=False,
-        num_workers=config.workers,
-    )
-    
-    ############### 训练模型 #################
-    print("begin to train my model.")
-    wyl_model = train_my_model(train_loader, vali_loader)
-   # prob, F1, overall_F1 = wyl_model.predict(test_loader)
-    prob, result = wyl_model.predict(test_loader)
-    if not os.path.exists('./results'): os.mkdir('./results')
-    result.to_csv("./results/results.csv")
-    # print("pridict label value discript", set(list(np.argmax(prob, axis=1).reshape(-1))))
-    pred_y = np.argmax(prob, axis=1)
-    print(pred_y)
-    save_pred_imgs(pred_y, test_file_names)
+# classid2rgb_map = {
+#     0: [255, 255, 255],  # "white", 背景
+#     1: [255, 0, 0],  # "red",
+#     2: [0, 0, 255],  # "blue", 房子
+#     3: [0, 255, 255],  # "cyan", 土地
+#     4: [0, 255, 0],  # "green", 草地
+#     5: [255, 255, 0],  # "yello" 汽车
+# }
+# 
+# 
+# def label2rgb(pred_y):
+#     # print(set(list(pred_y.reshape(-1))))
+#     rgb_img = np.zeros((pred_y.shape[0], pred_y.shape[1], 3))
+#     for i in range(len(pred_y)):
+#         for j in range(len(pred_y[0])):
+#             rgb_img[i][j] = classid2rgb_map.get(pred_y[i][j], [255, 255, 255])
+#     return rgb_img.astype(np.uint8)
+# 
+# 
+# # 将矩阵保存成图片
+# def save_pred_imgs(test_y, files_name):
+#     # print("array to image", test_y.shape)
+#     assert test_y.shape[0] == len(files_name), "len(test_files_name) != len(test_y)"
+#     if not os.path.exists(config.test_pred_path):
+#         os.makedirs(config.test_pred_path)  # 存放模型的地址
+#     else:
+#         removeDir(config.test_pred_path)
+#         os.makedirs(config.test_pred_path)  # 存放模型的地址
+#     for i in range(test_y.shape[0]):
+#         img = label2rgb(test_y[i])
+#         dump_file_name = config.test_pred_path + "/%s" % (files_name[i])
+#         # tiff.imsave(dump_file_name, img)
+#         cv2.imwrite(dump_file_name, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+# #        cv2.imwrite(dump_file_name, img)
+# 
+# 
+# def save_test_imgs_and_gt(imgs_path, gt_path):
+#     print(config.test_ori_imgs_dump_path)
+#     if not os.path.exists(config.test_ori_imgs_dump_path):
+#         os.makedirs(config.test_ori_imgs_dump_path)
+#     else:
+#         print('not exist')
+#         removeDir(config.test_ori_imgs_dump_path)
+#         os.makedirs(config.test_ori_imgs_dump_path)  # 存放模型的地址
+#     for img_path in imgs_path:
+#         file_name = os.path.split(img_path)[-1]
+#         moveFileto(img_path, os.path.join(config.test_ori_imgs_dump_path, file_name))
+# 
+#     if not os.path.exists(config.test_gt_dump_path):
+#         os.makedirs(config.test_gt_dump_path)
+#     else:
+#         removeDir(config.test_gt_dump_path)
+#         os.makedirs(config.test_gt_dump_path)  # 存放模型的地址
+#     for img_path in gt_path:
+#         file_name = os.path.split(img_path)[-1]
+#         moveFileto(img_path, os.path.join(config.test_gt_dump_path, file_name))
+# 
+# 
+# # input_dim #需要构建的global名字
+# def train_my_model(train_loader, vali_loader, model_flag=0):
+#     print("begin to get_model_predict ......")
+#     model_path = os.path.join(config.model_path, "Unet_fold_%d.h5" % (model_flag))
+#     if os.path.exists(model_path): os.remove(model_path); print("Remove file %s." % (model_path))
+#     # base_model = FCN8(config.class_num)
+#     base_model = FCN16(config.in_channels, config.class_num)
+#     # base_model = FCN8(3)
+#     wyl_model = My_Model(config, base_model)
+#     if os.path.exists(model_path):
+#         wyl_model.model = torch.load(model_path)
+#     else:
+#         wyl_model.train(train_loader, vali_loader, config.epochs, early_stop=config.early_stop)
+#         torch.save(wyl_model.model, model_path)
+#     return wyl_model
+# 
+# 
+# def model_training():
+#     train_test_split_ratio = 0.8
+#     train_vali_split_ratio = 0.7
+# 
+#     files_root = os.path.join(config.data_path, "img")
+#     file_names = os.listdir(files_root)
+#     file_names = list(filter(lambda x: ".tif" in x, file_names))
+# 
+#     # shuffle原文件
+#     random.seed(20180122)
+#     file_names = random.sample(file_names, len(file_names))
+# 
+#     trian_file_names = file_names[:int(len(file_names) * train_test_split_ratio)]
+#     test_file_names = file_names[int(len(file_names) * train_test_split_ratio):]
+# 
+#     vali_file_names = trian_file_names[int(len(trian_file_names) * train_vali_split_ratio):]
+#     trian_file_names = trian_file_names[:int(len(trian_file_names) * train_vali_split_ratio)]
+# 
+#     img_files_path = list(map(lambda x: os.path.join(config.data_path, "img", x), test_file_names))
+#     gt_files_path = list(map(lambda x: os.path.join(config.data_path, "label", x), test_file_names))
+#     save_test_imgs_and_gt(img_files_path, gt_files_path)
+# 
+#     # 构造训练loader
+#     train_set = ImgloaderPostdam_single_channel(
+#         config,
+#         trian_file_names,
+#         return_len=config.train_batch_num,
+#        # enhance=True,
+#         enhance=False,
+#         shuffle=True,
+#     )
+#     train_loader = DataLoader(
+#         train_set,
+#         batch_size=config.batch_size,
+#         shuffle=True,
+#         num_workers=config.workers,
+#     )
+# 
+#     # 构造验证loader
+#     vali_set = ImgloaderPostdam_single_channel(
+#         config,
+#         vali_file_names,
+#         return_len=config.vali_batch_num,
+#         enhance=False,
+#         shuffle=False,
+#     )
+#     vali_loader = DataLoader(
+#         vali_set,
+#         batch_size=config.batch_size,
+#         shuffle=True,
+#         num_workers=config.workers,
+#     )
+#     
+#     # 构造测试loader
+#     test_set = ImgloaderPostdam_single_channel(
+#         config,
+#         test_file_names,
+#         return_len=len(test_file_names),
+#         enhance=False,
+#         shuffle=False,
+#     )
+#     test_loader = DataLoader(
+#         test_set,
+#         batch_size=config.batch_size,
+#         shuffle=False,
+#         num_workers=config.workers,
+#     )
+#     
+#     ############### 训练模型 #################
+#     print("begin to train my model.")
+#     wyl_model = train_my_model(train_loader, vali_loader)
+#    # prob, F1, overall_F1 = wyl_model.predict(test_loader)
+#     prob, result = wyl_model.predict(test_loader)
+#     if not os.path.exists('./results'): os.mkdir('./results')
+#     result.to_csv("./results/results.csv")
+#     # print("pridict label value discript", set(list(np.argmax(prob, axis=1).reshape(-1))))
+#     pred_y = np.argmax(prob, axis=1)
+#     print(pred_y)
+#     save_pred_imgs(pred_y, test_file_names)
 
 
 def test_loader(files_list):
