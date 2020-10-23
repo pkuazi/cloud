@@ -246,7 +246,7 @@ logging.basicConfig(
 #     return args
 
 def test_loader(files_list,args):
-    print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
+#     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     start = datetime.now()
     ds = dataset(files_list)
     data_loader = data.DataLoader(
@@ -266,7 +266,7 @@ def test_loader(files_list,args):
             k += 1
     end = datetime.now()
     lapse = end - start
-    print('[%s] End loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
+#     print('[%s] End loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     return lapse
 
 
