@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 # from modules.models import ImgloaderPostdam_single_channel, ImgloaderPostdam
 from modules.models import OrigImgdataset,TileImgdataset
 from dataset import dataset,tiledataset
-from prefetcher import data_prefetcher,tiledata_prefetcher
+from prefetcher import tiledata_prefetcher
 # from modules.fcn import FCN16, FCN8
 # from utils import moveFileto, removeDir
 from config import config
