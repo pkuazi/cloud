@@ -40,18 +40,62 @@ class Imgloader(Dataset):
         idx_x = torch.FloatTensor(np.array(self.x[idx]))
         idx_y = torch.LongTensor(np.array(self.y[idx]))
         return idx_x, idx_y
+    
+class dataset(data.Dataset):
+    def __init__(self, file_path=None):
+        super(dataset, self).__init__()
+        self.img = file_path
+#         self.img = [x.replace('/gt/', '/imgs/') for x in self.gt]
 
-class OrigImgloader(Dataset):
-    def __init__(self, config, files_names, shuffle=False):
-        logging.info("ImgloaderPostdam->__init__->begin:")
-        random.seed(20180416)
+    def __getitem__(self, index):
+        tiffile, xoff, yoff = self.img[index]
+        ds = gdal.Open(tiffile)
+        fy4a_tile_data = ds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
+        fy4a_tile_data[np.isnan(fy4a_tile_data)] = 0
+        input = torch.from_numpy(fy4a_tile_data)
+        return input, index
+
+    def __len__(self):
+        return len(self.img)
+
+    def filelist(self):
+        return self.img
+
+class TileImgloader(Dataset):
+    def __init__(self, file_path=None):
+        random.seed(20201023)
         self.conf = config
         self.img_size_x = config.img_rows
         self.img_size_y = config.img_cols
         self.shuffle = shuffle
         self.file_names = files_names
         self.data_set = []
-
+    def __getitem__(self, idx):
+        if self.shuffle:
+            idx = random.sample(range(len(self.file_names)), 1)[0]
+        filename= self.file_names[idx]
+        imgfile = os.path.join(config.tile_img_path, filename)
+        gtfile = os.path.join(config.tile_gt_path, filename)
+        imgds = gdal.Open(imgfile)
+        gtds = gdal.Open(gtfile)
+        data_x = imgds.ReadAsArray()
+        data_y = gtds.ReadAsArray()
+        data_x = torch.torch.FloatTensor(data_x)
+        data_y = torch.LongTensor(data_y)
+        return data_x, data_y 
+    def __len__(self):
+        return len(self.file_names)
+        
+class OrigImgloader(Dataset):
+    def __init__(self, config, files_names, shuffle=False):
+        logging.info("ImgloaderPostdam->__init__->begin:")
+        random.seed(20201023)
+        self.conf = config
+        self.img_size_x = config.img_rows
+        self.img_size_y = config.img_cols
+        self.shuffle = shuffle
+        self.file_names = files_names
+        self.data_set = []
     def __len__(self):
         return len(self.file_names)
 
@@ -68,7 +112,9 @@ class OrigImgloader(Dataset):
         data_y = gtds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
         data_x = torch.torch.FloatTensor(data_x)
         data_y = torch.LongTensor(data_y)
-        return data_x, data_y        
+        return data_x, data_y 
+    
+          
 
 class ImgloaderPostdam(Dataset):
     rgb2classid_map = {

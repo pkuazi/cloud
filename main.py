@@ -18,6 +18,8 @@ from torch.utils.data import DataLoader
 # from modules.models import My_Model
 # from modules.models import ImgloaderPostdam_single_channel, ImgloaderPostdam
 from modules.models import OrigImgloader
+from dataset import dataset
+from prefetcher import data_prefetcher
 # from modules.fcn import FCN16, FCN8
 # from utils import moveFileto, removeDir
 from config import config
@@ -30,64 +32,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-# classid2rgb_map = {
-#     0: [255, 255, 255],  # "white", 背景
-#     1: [255, 0, 0],  # "red",
-#     2: [0, 0, 255],  # "blue", 房子
-#     3: [0, 255, 255],  # "cyan", 土地
-#     4: [0, 255, 0],  # "green", 草地
-#     5: [255, 255, 0],  # "yello" 汽车
-# }
-# 
-# 
-# def label2rgb(pred_y):
-#     # print(set(list(pred_y.reshape(-1))))
-#     rgb_img = np.zeros((pred_y.shape[0], pred_y.shape[1], 3))
-#     for i in range(len(pred_y)):
-#         for j in range(len(pred_y[0])):
-#             rgb_img[i][j] = classid2rgb_map.get(pred_y[i][j], [255, 255, 255])
-#     return rgb_img.astype(np.uint8)
-# 
-# 
-# # 将矩阵保存成图片
-# def save_pred_imgs(test_y, files_name):
-#     # print("array to image", test_y.shape)
-#     assert test_y.shape[0] == len(files_name), "len(test_files_name) != len(test_y)"
-#     if not os.path.exists(config.test_pred_path):
-#         os.makedirs(config.test_pred_path)  # 存放模型的地址
-#     else:
-#         removeDir(config.test_pred_path)
-#         os.makedirs(config.test_pred_path)  # 存放模型的地址
-#     for i in range(test_y.shape[0]):
-#         img = label2rgb(test_y[i])
-#         dump_file_name = config.test_pred_path + "/%s" % (files_name[i])
-#         # tiff.imsave(dump_file_name, img)
-#         cv2.imwrite(dump_file_name, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
-# #        cv2.imwrite(dump_file_name, img)
-# 
-# 
-# def save_test_imgs_and_gt(imgs_path, gt_path):
-#     print(config.test_ori_imgs_dump_path)
-#     if not os.path.exists(config.test_ori_imgs_dump_path):
-#         os.makedirs(config.test_ori_imgs_dump_path)
-#     else:
-#         print('not exist')
-#         removeDir(config.test_ori_imgs_dump_path)
-#         os.makedirs(config.test_ori_imgs_dump_path)  # 存放模型的地址
-#     for img_path in imgs_path:
-#         file_name = os.path.split(img_path)[-1]
-#         moveFileto(img_path, os.path.join(config.test_ori_imgs_dump_path, file_name))
-# 
-#     if not os.path.exists(config.test_gt_dump_path):
-#         os.makedirs(config.test_gt_dump_path)
-#     else:
-#         removeDir(config.test_gt_dump_path)
-#         os.makedirs(config.test_gt_dump_path)  # 存放模型的地址
-#     for img_path in gt_path:
-#         file_name = os.path.split(img_path)[-1]
-#         moveFileto(img_path, os.path.join(config.test_gt_dump_path, file_name))
-# 
-# 
+
 # # input_dim #需要构建的global名字
 # def train_my_model(train_loader, vali_loader, model_flag=0):
 #     print("begin to get_model_predict ......")
@@ -184,66 +129,6 @@ logging.basicConfig(
 #     pred_y = np.argmax(prob, axis=1)
 #     print(pred_y)
 #     save_pred_imgs(pred_y, test_file_names)
-# def get_args():
-#     # Get the parameters
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('--data_path', default='/data/fcn/test-set/')
-#     parser.add_argument('--model_path', default='model/')
-#     parser.add_argument('--train_f', default='train.lst')
-#     parser.add_argument('--val_f', default='val.lst')
-#     parser.add_argument('--tbs', type=int, default=8)
-#     parser.add_argument('--ag_step', type=int, default=1)
-#     parser.add_argument('--tbs_target', type=int, default=8)
-# 
-#     parser.add_argument('--vbs', type=int, default=32)
-#     parser.add_argument('--max_epochs', type=int, default=50)
-#     parser.add_argument('--anneal_start', type=int, default=30)
-#     parser.add_argument('--save_epoch', type=int, default=0)
-#     parser.add_argument('--log_batch', type=int, default=0)
-# 
-#     parser.add_argument('--optimizer', default='sgd')
-#     parser.add_argument('--dtoSGD', type=int, default=False)
-#     parser.add_argument('--lookahead', type=int, default=False)
-#     parser.add_argument('--la_steps', type=int, default=5)
-#     parser.add_argument('--la_alpha', type=float, default=0.8)
-#     parser.add_argument('--wd', type=float, default=0)
-#     parser.add_argument('--amsgrad', type=int, default=False)
-# 
-#     parser.add_argument('--lr0', type=float, default=1e-2)
-#     parser.add_argument('--warmup')  # constant, gradual
-#     parser.add_argument('--warmup_step', type=int)
-#     parser.add_argument('--lr1', type=float)
-#     parser.add_argument('--mom', type=float, default=0.9)
-#     parser.add_argument('--nag', type=int, default=1)
-# 
-#     parser.add_argument('--n_channels', type=int, default=14)
-#     parser.add_argument('--n_filters', type=int, default=64)
-#     parser.add_argument('--n_class', type=int, default=6)
-#     parser.add_argument('--H', type=int, default=256)
-#     parser.add_argument('--W', type=int, default=256)
-#     parser.add_argument('--norm_layer', default='none')
-#     parser.add_argument('--num_groups', type=int, default=0)
-#     parser.add_argument('--group_size', type=int, default=0)
-#     parser.add_argument('--in_with_mom', type=int, default=0)
-#     parser.add_argument('--in_mom', type=float, default=0.1)
-#     parser.add_argument('--affine', type=int, default=1)
-#     parser.add_argument('--using_movavg', type=int, default=1)
-#     parser.add_argument('--using_bn', type=int, default=1)
-#     parser.add_argument('--leps', type=int, default=1)
-#     parser.add_argument('--eps', type=float, default=1e-4)
-#     parser.add_argument('--wstd', type=int, default=0)
-#     parser.add_argument('--act_layer', default='relu')
-#     parser.add_argument('--gc', type=int, default=0)
-#     parser.add_argument('--gcc', type=int, default=1)
-#     parser.add_argument('--gcloc', type=int, default=0)
-# 
-#     parser.add_argument('--nproc', type=int, default=psutil.cpu_count(logical=True))
-#     parser.add_argument('--gpu', type=int, default=torch.cuda.is_available())
-#     parser.add_argument('--resume')
-#     parser.add_argument('--seed', type=int)
-#     args = parser.parse_args()
-# 
-#     return args
 
 def test_loader(files_list):
 #     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
