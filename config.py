@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import os
 from easydict import EasyDict as edict
-import psutils
+import psutil
 if not os.path.exists("./logs/"): os.makedirs("./logs/")
 if not os.path.exists("./cache/model/"): os.makedirs("./cache/model/")  # 存放模型的地址
 
