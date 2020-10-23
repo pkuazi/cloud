@@ -325,7 +325,7 @@ def main():
         for filename in files:
             file = os.path.join(root, filename)
             tif_list = gen_file_list(file)
-            files_offs_list.append(tif_list)
+            files_offs_list = files_offs_list+tif_list
     et = datetime.now()
     
     print('the number of file+offs is %s, spend %s' % (len(files_offs_list), (et - st)))
