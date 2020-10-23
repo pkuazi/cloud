@@ -271,6 +271,7 @@ def test_loader(files_list,args):
 
 def origimgloadtest(train_files_names):
     # 构造训练loader
+    start = datetime.now()
     train_set = OrigImgloader(config, train_files_names,  shuffle=False)   
     train_loader = DataLoader(
         train_set,
@@ -278,10 +279,11 @@ def origimgloadtest(train_files_names):
         shuffle=True,
         num_workers=config.workers,
     )
-    
+    k = 0
     # 分批训练样本
     for i, (data_x, data_y) in enumerate(train_loader, 1):
         img_count = len(data_y)
+        k+=img_count
 #         sample_num += img_count
 #         data_x = Variable(data_x.cuda())
 #         data_y = Variable(data_y.cuda())
@@ -295,10 +297,10 @@ def origimgloadtest(train_files_names):
 #             inputs = torch.tensor(inputs, dtype=torch.float32)
 #             inputs, index = prefetcher.next()
 #             k += 1
-#     end = datetime.now()
-#     lapse = end - start
+    end = datetime.now()
+    lapse = end - start
 #     print('[%s] End loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
-#     return lapse
+    return lapse
     
 
 def gen_file_list(geotif):
