@@ -58,7 +58,7 @@ class OrigImgloader(Dataset):
         if self.shuffle:
             idx = random.sample(range(len(self.file_names)), 1)[0]
         
-        filename, xoff, yoff = self.file_names[index]
+        filename, xoff, yoff = self.file_names[idx]
         imgfile = os.path.join(config.img_path, filename)
         gtfile = os.path.join(config.gt_path, filename)
         imgds = gdal.Open(imgfile)
