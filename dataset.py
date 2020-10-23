@@ -6,7 +6,6 @@ from config import config
 
 class tiledataset(data.Dataset):
     def __init__(self, file_path=None):
-        super(dataset, self).__init__()
         self.file_names = files_names
 #         self.img = [x.replace('/gt/', '/imgs/') for x in self.gt]
 
