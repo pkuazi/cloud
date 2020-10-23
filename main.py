@@ -235,7 +235,9 @@ def main():
                 tif_list = gen_file_list(file)
                 files_offs_list = files_offs_list+tif_list
     et = datetime.now()
-    
+    file = open('/tmp/files_offs_list.txt','w');
+    file.write(str(files_offs_list));
+    file.close();
     print('the number of file+offs is %s, spend %s' % (len(files_offs_list), (et - st)))
     lapse = origimgloadtest(files_offs_list)
     print('Loading dataset from original image using: %s.' % (lapse))
