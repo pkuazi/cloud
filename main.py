@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader
 # import cv2
 # from modules.models import My_Model
 # from modules.models import ImgloaderPostdam_single_channel, ImgloaderPostdam
-from modules.models import OrigImgdataset
+from modules.models import OrigImgdataset,TileImgdataset
 from dataset import dataset,tiledataset
 from prefetcher import data_prefetcher,tiledata_prefetcher
 # from modules.fcn import FCN16, FCN8
