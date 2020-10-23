@@ -40,7 +40,7 @@ NP2GDAL_CONVERSION = {
 }
 
 def preprocessfy4a(fy4a_file, fy4a_dst):
-#     print('the current fy4afile is %s' % fy4a_file)
+    print('the current fy4afile is %s' % fy4a_file)
     data = read_fy4a_arr(fy4a_file, out_georange)
     
     xsize = data.shape[1]
@@ -63,7 +63,7 @@ def preprocessfy4a(fy4a_file, fy4a_dst):
     del dst_ds
 
 def preprocessh08(h08file, h08_dst):
-#     print('the current h08file is %s' % h08file)
+    print('the current h08file is %s' % h08file)
     ds = xr.open_dataset(h08file)
     cltype = ds.CLTYPE.data
     Lon = ds.longitude.data
@@ -132,7 +132,6 @@ def main():
                     h08_file = os.path.join(root, file)
                     fy4a_file = h8_find_fy4a(h08_file, fy4a_root) 
                     if os.path.exists(fy4a_file): 
-                        print(h08_file,fy4a_file) 
                         h08_dst = os.path.join(h08_tif, h08date + '_' + h08time + '.tif')
                         fy4a_dst = os.path.join(fy4a_tif, h08date + '_' + h08time + '.tif')
                         try:
