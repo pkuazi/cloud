@@ -63,7 +63,6 @@ def preprocessfy4a(fy4a_file, fy4a_dst):
     del dst_ds
 
 def preprocessh08(h08file, h08_dst):
-    print('the current h08file is %s' % h08file)
     ds = xr.open_dataset(h08file)
     cltype = ds.CLTYPE.data
     Lon = ds.longitude.data
@@ -104,6 +103,7 @@ def preprocessh08(h08file, h08_dst):
     
     dst_ds.GetRasterBand(1).WriteArray(data)
     del dst_ds
+    print('the current h08file is %s' % h08file)
 
 def gen_file_list(geotif):
     file_list = []
