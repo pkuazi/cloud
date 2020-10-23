@@ -284,8 +284,8 @@ def origimgloadtest(train_files_names):
     # 分批训练样本
     for i, (data_x, data_y) in enumerate(train_loader, 1):
         img_count = len(data_y)
-        print(k)
-        k+=img_count
+#         print(k)
+#         k+=img_count
 #         sample_num += img_count
 #         data_x = Variable(data_x.cuda())
 #         data_y = Variable(data_y.cuda())
@@ -340,9 +340,8 @@ def main():
     tiles = os.listdir(tiles_dir)
     tiles_list = list(filter(lambda x: x.endswith(".tif") and '0330' in x, tiles))
     et = datetime.now()
-    print('the number of tiles is %s,, spend %s' % (len(tiles_list), (et - st)))
-    args = get_args()
-    lapse1 = test_loader(tiles_list,args)
+    print('the number of tiles is %s, spend %s' % (len(tiles_list), (et - st)))
+    lapse1 = test_loader(tiles_list)
     print('Loading dataset from tiles using: %s.' % (lapse1))
 
 
