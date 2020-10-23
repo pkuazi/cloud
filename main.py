@@ -145,7 +145,8 @@ def test_loader(files_list):
     while (inputs is not None):
 #             inputs = torch.tensor(inputs, dtype=torch.float32)
         inputs, targets, index = prefetcher.next()
-        img_count = len(inputs)
+        print(inputs)
+#         img_count = len(inputs)
 #         print(k)
 #         k += 1
            
