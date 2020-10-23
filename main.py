@@ -321,29 +321,32 @@ def main():
     tifs_dir = '/data/data/cloud_tif/img'
     tiles_dir = '/data/data/fy4a_tiles'
     
+    st = datetime.now()
+    tiles = os.listdir(tiles_dir)
+    tiles_list = list(filter(lambda x: x.endswith(".tif") and x.split('_')[1]=='0330' , tiles))
+    et = datetime.now()
+    print('the number of tiles is %s, spend %s' % (len(tiles_list), (et - st)))
+    lapse1 = test_loader(tiles_list)
+    print('Loading dataset from tiles using: %s.' % (lapse1))
+    
+    
 #     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     st = datetime.now()
     files_offs_list = []
     for root, dirs, files in os.walk(tifs_dir):
-        files = list(filter(lambda x: x.endswith(".tif") and '0330' in x, files))
+        files = list(filter(lambda x: x.endswith(".tif"), files))
+        h08date + '_' + h08time + '.tif'
         for filename in files:
-            file = os.path.join(root, filename)
-            tif_list = gen_file_list(file)
-            files_offs_list = files_offs_list+tif_list
+            time = filename.split('_')[1].split('.')[0]
+            if time == '0330':
+                file = os.path.join(root, filename)
+                tif_list = gen_file_list(file)
+                files_offs_list = files_offs_list+tif_list
     et = datetime.now()
     
     print('the number of file+offs is %s, spend %s' % (len(files_offs_list), (et - st)))
     lapse = origimgloadtest(files_offs_list)
     print('Loading dataset from original image using: %s.' % (lapse))
     
-    st = datetime.now()
-    tiles = os.listdir(tiles_dir)
-    tiles_list = list(filter(lambda x: x.endswith(".tif") and '0330' in x, tiles))
-    et = datetime.now()
-    print('the number of tiles is %s, spend %s' % (len(tiles_list), (et - st)))
-    lapse1 = test_loader(tiles_list)
-    print('Loading dataset from tiles using: %s.' % (lapse1))
-
-
 if __name__ == '__main__':
     main()
