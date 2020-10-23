@@ -29,8 +29,8 @@ class tiledata_prefetcher():
         targets = self.next_targets
         index = self.next_index
         self.preload()
-#         return inputs, targets, index
-        return inputs, index
+        return inputs, targets, index
+#         return inputs, index
     
 class data_prefetcher():
     def __init__(self, loader, use_cuda=True):
