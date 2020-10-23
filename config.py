@@ -12,6 +12,9 @@ config.BLOCK_SIZE = 256
 config.OVERLAP_SIZE = 0
 # config.data_path = os.path.join(BASE_DIR,"data")
 config.data_path = '/data/data'
+config.img_path = '/data/data/cloud_tif/img'
+config.gt_path = '/data/data/cloud_tif/gt'
+
 config.train_imgs_path = os.path.join(BASE_DIR,"data/train-set")
 config.test_imgs_path = os.path.join(BASE_DIR,"data/test-set/imgs")
 

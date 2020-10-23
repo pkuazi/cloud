@@ -40,7 +40,36 @@ class Imgloader(Dataset):
         idx_y = torch.LongTensor(np.array(self.y[idx]))
         return idx_x, idx_y
 
+class OrigImgloader(Dataset):
+    def __init__(self, config, files_names, return_len=None, enhance=False, shuffle=False):
+        logging.info("ImgloaderPostdam->__init__->begin:")
+        random.seed(20180416)
+        self.conf = config
+        self.img_size_x = config.img_rows
+        self.img_size_y = config.img_cols
+        self.shuffle = shuffle
+        self.file_names = files_names
+        self.enhance = enhance
+        self.return_len = return_len
+        self.data_set = []
 
+    def __len__(self):
+        return min(self.return_len, len(self.file_names))
+
+    def __getitem__(self, idx):
+        if self.shuffle:
+            idx = random.sample(range(len(self.file_names)), 1)[0]
+        
+        filename, xoff, yoff = self.file_names[index]
+        imgfile = os.path.join(config.img_path, filename)
+        gtfile = os.path.join(config.gt_path, filename)
+        imgds = gdal.Open(imgfile)
+        gtds = gdal.Open(gtfile)
+        data_x = imgds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
+        data_y = gtds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
+        data_x = torch.torch.FloatTensor(data_x)
+        data_y = torch.LongTensor(data_y)
+        return data_x, data_y        
 
 class ImgloaderPostdam(Dataset):
     rgb2classid_map = {
@@ -165,7 +194,7 @@ class ImgloaderPostdam_single_channel(ImgloaderPostdam):
     def get_data_set(self, idx=None):
         need_enhan_files = [self.file_names[idx]]
         img_files_path = list(map(lambda x: os.path.join(self.conf.data_path, "img", x), need_enhan_files))
-        label_files_path = list(map(lambda x: os.path.join(self.conf.data_path, "label", x), need_enhan_files))
+        label_files_path = list(map(lambda x: os.path.join(self.conf.data_path, "gt", x), need_enhan_files))
         fun = lambda x, y: (1.0 * cv2.imread(x, -1) / 255.0, cv2.imread(y, -1))
         data_set = list(map(fun, img_files_path, label_files_path))
         return data_set

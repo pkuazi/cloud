@@ -36,13 +36,15 @@ classid2rgb_map = {
     5: [255, 255, 0],  # "yello" 汽车
 }
 
+
 def label2rgb(pred_y):
-    #print(set(list(pred_y.reshape(-1))))
+    # print(set(list(pred_y.reshape(-1))))
     rgb_img = np.zeros((pred_y.shape[0], pred_y.shape[1], 3))
     for i in range(len(pred_y)):
         for j in range(len(pred_y[0])):
             rgb_img[i][j] = classid2rgb_map.get(pred_y[i][j], [255, 255, 255])
     return rgb_img.astype(np.uint8)
+
 
 # 将矩阵保存成图片
 def save_pred_imgs(test_y, files_name):
@@ -56,9 +58,10 @@ def save_pred_imgs(test_y, files_name):
     for i in range(test_y.shape[0]):
         img = label2rgb(test_y[i])
         dump_file_name = config.test_pred_path + "/%s" % (files_name[i])
-        #tiff.imsave(dump_file_name, img)
+        # tiff.imsave(dump_file_name, img)
         cv2.imwrite(dump_file_name, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 #        cv2.imwrite(dump_file_name, img)
+
 
 def save_test_imgs_and_gt(imgs_path, gt_path):
     print(config.test_ori_imgs_dump_path)
@@ -87,7 +90,7 @@ def train_my_model(train_loader, vali_loader, model_flag=0):
     print("begin to get_model_predict ......")
     model_path = os.path.join(config.model_path, "Unet_fold_%d.h5" % (model_flag))
     if os.path.exists(model_path): os.remove(model_path); print("Remove file %s." % (model_path))
-    #base_model = FCN8(config.class_num)
+    # base_model = FCN8(config.class_num)
     base_model = FCN16(config.in_channels, config.class_num)
     # base_model = FCN8(3)
     wyl_model = My_Model(config, base_model)
@@ -166,19 +169,19 @@ def model_training():
         shuffle=False,
         num_workers=config.workers,
     )
-
     
     ############### 训练模型 #################
     print("begin to train my model.")
     wyl_model = train_my_model(train_loader, vali_loader)
    # prob, F1, overall_F1 = wyl_model.predict(test_loader)
-    prob,result=wyl_model.predict(test_loader)
+    prob, result = wyl_model.predict(test_loader)
     if not os.path.exists('./results'): os.mkdir('./results')
     result.to_csv("./results/results.csv")
     # print("pridict label value discript", set(list(np.argmax(prob, axis=1).reshape(-1))))
     pred_y = np.argmax(prob, axis=1)
     print(pred_y)
     save_pred_imgs(pred_y, test_file_names)
+
 
 def test_loader(files_list):
     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
@@ -199,19 +202,54 @@ def test_loader(files_list):
             inputs, index = prefetcher.next()
             k += 1
     end = datetime.now()
-    lapse = end-start
+    lapse = end - start
     print('[%s] End loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     return lapse
 
+
+def origimgloadtest(train_files_names):
+    # 构造训练loader
+    train_set = OrigImgloader(config, train_files_names, enhance=False, shuffle=False)   
+    train_loader = DataLoader(
+        train_set,
+        batch_size=config.batch_size,
+        shuffle=True,
+        num_workers=config.workers,
+    )
+    
+    # 分批训练样本
+    for i, (data_x, data_y) in enumerate(train_loader, 1):
+        img_count = len(data_y)
+        sample_num += img_count
+#         data_x = Variable(data_x.cuda())
+#         data_y = Variable(data_y.cuda())
+        
+#     prefetcher = data_prefetcher(data_loader, args.gpu)
+#     with torch.no_grad():
+# #         inputs, targets, index = prefetcher.next()
+#         inputs, index = prefetcher.next()
+#         k = 0
+#         while (inputs is not None):
+#             inputs = torch.tensor(inputs, dtype=torch.float32)
+#             inputs, index = prefetcher.next()
+#             k += 1
+#     end = datetime.now()
+#     lapse = end - start
+#     print('[%s] End loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
+#     return lapse
+    
+
 def gen_file_list(geotif):
     file_list = []
+    filename = geotif.split('/')[-1]
     ds = gdal.Open(geotif)
     xsize, ysize = ds.RasterXSize, ds.RasterYSize
-    off_list = gen_tiles_offs(xsize, ysize, config.BLOCK_SIZE,config.OVERLAP_SIZE)
+    off_list = gen_tiles_offs(xsize, ysize, config.BLOCK_SIZE, config.OVERLAP_SIZE)
    
-    for xoff,yoff in off_list:    
-        file_list.append((geotif, xoff, yoff))     
+    for xoff, yoff in off_list:    
+        file_list.append((filename, xoff, yoff))     
     return file_list
+
 
 def main():
     tifs_dir = '/data/data/cloud_tif/img'
@@ -219,7 +257,7 @@ def main():
     
 #     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     st = datetime.now()
-    files_offs_list=[]
+    files_offs_list = []
     for root, dirs, files in os.walk(tifs_dir):
         files = list(filter(lambda x: x.endswith(".tif") and '0330' in x, files))
         for filename in files:
@@ -228,17 +266,18 @@ def main():
             files_offs_list.append(tif_list)
     et = datetime.now()
     
-    print('the number of file+offs is %s, spend %s'%(len(files_offs_list)),et-st)
-    lapse = test_loader(files_offs_list)
+    print('the number of file+offs is %s, spend %s' % (len(files_offs_list)), et - st)
+    lapse = origimgloadtest(files_offs_list)
     print('Loading dataset from original image using: %s.' % (lapse))
     
     st = datetime.now()
-    tiles=os.listdir(tiles_dir)
+    tiles = os.listdir(tiles_dir)
     tiles_list = list(filter(lambda x: x.endswith(".tif") and '0330' in x, tiles))
     et = datetime.now()
-    print('the number of tiles is %s,, spend %s'%(len(tiles_list)),et-st)
+    print('the number of tiles is %s,, spend %s' % (len(tiles_list)), et - st)
     lapse1 = test_loader(tiles_list)
     print('Loading dataset from tiles using: %s.' % (lapse1))
+
 
 if __name__ == '__main__':
     main()

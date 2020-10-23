@@ -111,12 +111,14 @@ def preprocessh08(h08file, h08_dst):
 
 def gen_file_list(geotif):
     file_list = []
+    filename = geotif.split('/')[-1]
+
     ds = gdal.Open(geotif)
     xsize, ysize = ds.RasterXSize, ds.RasterYSize
     off_list = gen_tiles_offs(xsize, ysize, config.BLOCK_SIZE,config.OVERLAP_SIZE)
    
     for xoff,yoff in off_list:    
-        file_list.append((geotif, xoff, yoff))     
+        file_list.append((filename, xoff, yoff))     
     return file_list
 
 def main():   
