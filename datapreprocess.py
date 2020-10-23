@@ -121,7 +121,6 @@ def main():
     for root, dirs, files in os.walk(h08_root):
         files = list(filter(lambda x: x.endswith(".nc"), files))
         for file in files:
-            print(file)
             h08date = file.split('_')[2]
             h08time = file.split('_')[3]
             hour = h08time[:2]
@@ -132,7 +131,8 @@ def main():
         #                     have corresponding fy4a data
                     h08_file = os.path.join(root, file)
                     fy4a_file = h8_find_fy4a(h08_file, fy4a_root) 
-                    if os.path.exists(fy4a_file):  
+                    if os.path.exists(fy4a_file): 
+                        print(h08_file,fy4a_file) 
                         h08_dst = os.path.join(h08_tif, h08date + '_' + h08time + '.tif')
                         fy4a_dst = os.path.join(fy4a_tif, h08date + '_' + h08time + '.tif')
                         try:
