@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader
 # from modules.models import My_Model
 # from modules.models import ImgloaderPostdam_single_channel, ImgloaderPostdam
 from modules.models import OrigImgloader
-from dataset import dataset
+from dataset import dataset,tiledataset
 from prefetcher import data_prefetcher,tiledata_prefetcher
 # from modules.fcn import FCN16, FCN8
 # from utils import moveFileto, removeDir
@@ -133,7 +133,7 @@ logging.basicConfig(
 def test_loader(files_list):
 #     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     start = datetime.now()
-    ds = dataset(files_list)
+    ds = tiledataset(files_list)
     data_loader = DataLoader(
         ds, batch_size=config.batch_size,
 #         sampler=data.SequentialSampler(ds),
