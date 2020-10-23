@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 # from modules.models import ImgloaderPostdam_single_channel, ImgloaderPostdam
 from modules.models import OrigImgloader
 from dataset import dataset
-from prefetcher import data_prefetcher
+from prefetcher import data_prefetcher,tiledata_prefetcher
 # from modules.fcn import FCN16, FCN8
 # from utils import moveFileto, removeDir
 from config import config
@@ -139,7 +139,7 @@ def test_loader(files_list):
 #         sampler=data.SequentialSampler(ds),
         num_workers=config.workers)
 
-    prefetcher = data_prefetcher(data_loader, torch.cuda.is_available())
+    prefetcher = tiledata_prefetcher(data_loader, torch.cuda.is_available())
     with torch.no_grad():
 #         inputs, targets, index = prefetcher.next()
         inputs, index = prefetcher.next()
