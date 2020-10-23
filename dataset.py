@@ -23,7 +23,7 @@ class tiledataset(data.Dataset):
         data_y = gtds.ReadAsArray()
         data_x = torch.torch.FloatTensor(data_x)
         data_y = torch.LongTensor(data_y)
-        return data_x, data_y ,index
+        return data_x, data_y ,idx
     
 #         input = torch.from_numpy(np.transpose(fy4a_tile_data, (2, 0, 1)))  # HWC to CHW
 
