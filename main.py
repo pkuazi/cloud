@@ -282,7 +282,7 @@ def origimgloadtest(train_files_names):
     # 分批训练样本
     for i, (data_x, data_y) in enumerate(train_loader, 1):
         img_count = len(data_y)
-        sample_num += img_count
+#         sample_num += img_count
 #         data_x = Variable(data_x.cuda())
 #         data_y = Variable(data_y.cuda())
         
