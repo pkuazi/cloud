@@ -134,7 +134,7 @@ def test_loader(files_list):
 #     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     start = datetime.now()
     ds = dataset(files_list)
-    data_loader = data.DataLoader(
+    data_loader = DataLoader(
         ds, batch_size=config.batch_size,
         sampler=data.SequentialSampler(ds),
         num_workers=config.workers)
