@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 import os
 from easydict import EasyDict as edict
-
+import psutils
 if not os.path.exists("./logs/"): os.makedirs("./logs/")
 if not os.path.exists("./cache/model/"): os.makedirs("./cache/model/")  # 存放模型的地址
 
@@ -24,7 +24,7 @@ config.test_ori_imgs_dump_path = os.path.join(BASE_DIR,"data/test-set/imgs")
 
 config.model_path = os.path.join(BASE_DIR,"model/")
 config.results_path = os.path.join('/tmp','results/')
-config.in_channels=3
+config.in_channels=14
 config.class_num = 6
 config.img_rows = 224
 config.img_cols = 224
@@ -32,9 +32,11 @@ config.img_cols = 224
 # config.img_cols = 800
 config.train_batch_num = 100 # 1个epoch有train_batch_num个样本
 config.vali_batch_num = 50 # 1个epoch有train_batch_num个样本
-config.batch_size = 2  # 深度模型 分批训练的批量大小
+config.batch_size = 8  # 深度模型 分批训练的批量大小
 config.epochs = 150  # 总共训练的轮数（实际不会超过该轮次，因为有early_stop限制）
 config.early_stop = 30  # 最优epoch的置信epochs
 config.folds = 5 # 使用5折交叉验证
-config.workers = 40
+config.workers = psutil.cpu_count(logical=True)
+
+
 

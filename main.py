@@ -184,75 +184,75 @@ logging.basicConfig(
 #     pred_y = np.argmax(prob, axis=1)
 #     print(pred_y)
 #     save_pred_imgs(pred_y, test_file_names)
-def get_args():
-    # Get the parameters
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--data_path', default='/data/fcn/test-set/')
-    parser.add_argument('--model_path', default='model/')
-    parser.add_argument('--train_f', default='train.lst')
-    parser.add_argument('--val_f', default='val.lst')
-    parser.add_argument('--tbs', type=int, default=8)
-    parser.add_argument('--ag_step', type=int, default=1)
-    parser.add_argument('--tbs_target', type=int, default=8)
-
-    parser.add_argument('--vbs', type=int, default=32)
-    parser.add_argument('--max_epochs', type=int, default=50)
-    parser.add_argument('--anneal_start', type=int, default=30)
-    parser.add_argument('--save_epoch', type=int, default=0)
-    parser.add_argument('--log_batch', type=int, default=0)
-
-    parser.add_argument('--optimizer', default='sgd')
-    parser.add_argument('--dtoSGD', type=int, default=False)
-    parser.add_argument('--lookahead', type=int, default=False)
-    parser.add_argument('--la_steps', type=int, default=5)
-    parser.add_argument('--la_alpha', type=float, default=0.8)
-    parser.add_argument('--wd', type=float, default=0)
-    parser.add_argument('--amsgrad', type=int, default=False)
-
-    parser.add_argument('--lr0', type=float, default=1e-2)
-    parser.add_argument('--warmup')  # constant, gradual
-    parser.add_argument('--warmup_step', type=int)
-    parser.add_argument('--lr1', type=float)
-    parser.add_argument('--mom', type=float, default=0.9)
-    parser.add_argument('--nag', type=int, default=1)
-
-    parser.add_argument('--n_channels', type=int, default=14)
-    parser.add_argument('--n_filters', type=int, default=64)
-    parser.add_argument('--n_class', type=int, default=6)
-    parser.add_argument('--H', type=int, default=256)
-    parser.add_argument('--W', type=int, default=256)
-    parser.add_argument('--norm_layer', default='none')
-    parser.add_argument('--num_groups', type=int, default=0)
-    parser.add_argument('--group_size', type=int, default=0)
-    parser.add_argument('--in_with_mom', type=int, default=0)
-    parser.add_argument('--in_mom', type=float, default=0.1)
-    parser.add_argument('--affine', type=int, default=1)
-    parser.add_argument('--using_movavg', type=int, default=1)
-    parser.add_argument('--using_bn', type=int, default=1)
-    parser.add_argument('--leps', type=int, default=1)
-    parser.add_argument('--eps', type=float, default=1e-4)
-    parser.add_argument('--wstd', type=int, default=0)
-    parser.add_argument('--act_layer', default='relu')
-    parser.add_argument('--gc', type=int, default=0)
-    parser.add_argument('--gcc', type=int, default=1)
-    parser.add_argument('--gcloc', type=int, default=0)
-
-    parser.add_argument('--nproc', type=int, default=psutil.cpu_count(logical=True))
-    parser.add_argument('--gpu', type=int, default=torch.cuda.is_available())
-    parser.add_argument('--resume')
-    parser.add_argument('--seed', type=int)
-    args = parser.parse_args()
-
-    return args
+# def get_args():
+#     # Get the parameters
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('--data_path', default='/data/fcn/test-set/')
+#     parser.add_argument('--model_path', default='model/')
+#     parser.add_argument('--train_f', default='train.lst')
+#     parser.add_argument('--val_f', default='val.lst')
+#     parser.add_argument('--tbs', type=int, default=8)
+#     parser.add_argument('--ag_step', type=int, default=1)
+#     parser.add_argument('--tbs_target', type=int, default=8)
+# 
+#     parser.add_argument('--vbs', type=int, default=32)
+#     parser.add_argument('--max_epochs', type=int, default=50)
+#     parser.add_argument('--anneal_start', type=int, default=30)
+#     parser.add_argument('--save_epoch', type=int, default=0)
+#     parser.add_argument('--log_batch', type=int, default=0)
+# 
+#     parser.add_argument('--optimizer', default='sgd')
+#     parser.add_argument('--dtoSGD', type=int, default=False)
+#     parser.add_argument('--lookahead', type=int, default=False)
+#     parser.add_argument('--la_steps', type=int, default=5)
+#     parser.add_argument('--la_alpha', type=float, default=0.8)
+#     parser.add_argument('--wd', type=float, default=0)
+#     parser.add_argument('--amsgrad', type=int, default=False)
+# 
+#     parser.add_argument('--lr0', type=float, default=1e-2)
+#     parser.add_argument('--warmup')  # constant, gradual
+#     parser.add_argument('--warmup_step', type=int)
+#     parser.add_argument('--lr1', type=float)
+#     parser.add_argument('--mom', type=float, default=0.9)
+#     parser.add_argument('--nag', type=int, default=1)
+# 
+#     parser.add_argument('--n_channels', type=int, default=14)
+#     parser.add_argument('--n_filters', type=int, default=64)
+#     parser.add_argument('--n_class', type=int, default=6)
+#     parser.add_argument('--H', type=int, default=256)
+#     parser.add_argument('--W', type=int, default=256)
+#     parser.add_argument('--norm_layer', default='none')
+#     parser.add_argument('--num_groups', type=int, default=0)
+#     parser.add_argument('--group_size', type=int, default=0)
+#     parser.add_argument('--in_with_mom', type=int, default=0)
+#     parser.add_argument('--in_mom', type=float, default=0.1)
+#     parser.add_argument('--affine', type=int, default=1)
+#     parser.add_argument('--using_movavg', type=int, default=1)
+#     parser.add_argument('--using_bn', type=int, default=1)
+#     parser.add_argument('--leps', type=int, default=1)
+#     parser.add_argument('--eps', type=float, default=1e-4)
+#     parser.add_argument('--wstd', type=int, default=0)
+#     parser.add_argument('--act_layer', default='relu')
+#     parser.add_argument('--gc', type=int, default=0)
+#     parser.add_argument('--gcc', type=int, default=1)
+#     parser.add_argument('--gcloc', type=int, default=0)
+# 
+#     parser.add_argument('--nproc', type=int, default=psutil.cpu_count(logical=True))
+#     parser.add_argument('--gpu', type=int, default=torch.cuda.is_available())
+#     parser.add_argument('--resume')
+#     parser.add_argument('--seed', type=int)
+#     args = parser.parse_args()
+# 
+#     return args
 
 def test_loader(files_list,args):
     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     start = datetime.now()
     ds = dataset(files_list)
     data_loader = data.DataLoader(
-        ds, batch_size=args.bs,
+        ds, batch_size=config.batch_size,
         sampler=data.SequentialSampler(ds),
-        num_workers=args.nproc, pin_memory=args.gpu, drop_last=False)
+        num_workers=config.workers)
 
     prefetcher = data_prefetcher(data_loader, args.gpu)
     with torch.no_grad():
@@ -277,7 +277,7 @@ def origimgloadtest(train_files_names):
     train_loader = DataLoader(
         train_set,
         batch_size=config.batch_size,
-        shuffle=True,
+#         shuffle=True,
         num_workers=config.workers,
     )
     k = 0
