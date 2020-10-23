@@ -41,7 +41,7 @@ class Imgloader(Dataset):
         return idx_x, idx_y
 
 class OrigImgloader(Dataset):
-    def __init__(self, config, files_names, return_len=None, enhance=False, shuffle=False):
+    def __init__(self, config, files_names, shuffle=False):
         logging.info("ImgloaderPostdam->__init__->begin:")
         random.seed(20180416)
         self.conf = config
@@ -49,12 +49,10 @@ class OrigImgloader(Dataset):
         self.img_size_y = config.img_cols
         self.shuffle = shuffle
         self.file_names = files_names
-        self.enhance = enhance
-        self.return_len = return_len
         self.data_set = []
 
     def __len__(self):
-        return min(self.return_len, len(self.file_names))
+        return len(self.file_names)
 
     def __getitem__(self, idx):
         if self.shuffle:
