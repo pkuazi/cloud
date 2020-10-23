@@ -10,6 +10,7 @@ random.seed(20180122)
 np.random.seed(20180122)
 from datetime import datetime
 import torch
+import gdal
 from torch.utils.data import DataLoader
 # import tifffile as tiff
 # import cv2
