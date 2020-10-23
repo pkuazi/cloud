@@ -9,7 +9,7 @@ config = edict()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 config.BLOCK_SIZE = 256
-config.OVERLAP_SIZE = 128
+config.OVERLAP_SIZE = 0
 # config.data_path = os.path.join(BASE_DIR,"data")
 config.data_path = '/data/data'
 config.img_path = '/data/data/cloud_tif/img'
