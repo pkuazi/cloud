@@ -8,7 +8,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 random.seed(20180122)
 np.random.seed(20180122)
-
+from datetime import datetime
 import torch
 from torch.utils.data import DataLoader
 # import tifffile as tiff
