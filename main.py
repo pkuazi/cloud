@@ -262,6 +262,7 @@ def test_loader(files_list,args):
         while (inputs is not None):
             inputs = torch.tensor(inputs, dtype=torch.float32)
             inputs, index = prefetcher.next()
+            print(k)
             k += 1
     end = datetime.now()
     lapse = end - start
@@ -283,6 +284,7 @@ def origimgloadtest(train_files_names):
     # 分批训练样本
     for i, (data_x, data_y) in enumerate(train_loader, 1):
         img_count = len(data_y)
+        print(k)
         k+=img_count
 #         sample_num += img_count
 #         data_x = Variable(data_x.cuda())
