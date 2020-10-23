@@ -56,8 +56,8 @@ class TileImgdataset(Dataset):
         filename= self.file_names[idx]
         imgfile = os.path.join(config.tile_img_path, filename)
         gtfile = os.path.join(config.tile_gt_path, filename)
-        imgds = gdal.Open(imgfile)
-        gtds = gdal.Open(gtfile)
+        imgds = gdal.Open(imgfile,gdal.GA_ReadOnly)
+        gtds = gdal.Open(gtfile,gdal.GA_ReadOnly)
         data_x = imgds.ReadAsArray()
         data_y = gtds.ReadAsArray()
         data_x = torch.torch.FloatTensor(data_x)
@@ -86,8 +86,8 @@ class OrigImgdataset(Dataset):
         filename, xoff, yoff = self.file_names[idx]
         imgfile = os.path.join(config.img_path, filename)
         gtfile = os.path.join(config.gt_path, filename)
-        imgds = gdal.Open(imgfile)
-        gtds = gdal.Open(gtfile)
+        imgds = gdal.Open(imgfile,gdal.GA_ReadOnly)
+        gtds = gdal.Open(gtfile,gdal.GA_ReadOnly)
         data_x = imgds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
         data_y = gtds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
         data_x = torch.torch.FloatTensor(data_x)
@@ -102,7 +102,7 @@ class preddataset(Dataset):
 
     def __getitem__(self, index):
         tiffile, xoff, yoff = self.img[index]
-        ds = gdal.Open(tiffile)
+        ds = gdal.Open(tiffile,gdal.GA_ReadOnly)
         fy4a_tile_data = ds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
         fy4a_tile_data[np.isnan(fy4a_tile_data)] = 0
         input = torch.from_numpy(fy4a_tile_data)

@@ -18,6 +18,8 @@ config.gt_path = '/data/data/cloud_tif/gt'
 config.tile_img_path = '/data/data/fy4a_tiles'
 config.tile_gt_path = '/data/data/h08_tiles'
 
+config.test_path='/data/tz2020/ship_detection/test/src'
+
 config.train_imgs_path = os.path.join(BASE_DIR,"data/train-set")
 config.test_imgs_path = os.path.join(BASE_DIR,"data/test-set/imgs")
 
