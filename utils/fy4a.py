@@ -8,7 +8,7 @@
 
 import xarray as xr
 import numpy as np
-
+import sys
 from utils.projection import latlon2linecolumn
 
 
@@ -32,19 +32,35 @@ class AGRI_L1(object):
         """
         获得L1数据hdf5文件对象
         """
-        self.dataset = xr.open_dataset(file_path)
-        self.resolution = file_path[-15:-10]
-        self.line_begin = self.dataset.attrs['Begin Line Number']
-        self.line_end = self.dataset.attrs['End Line Number']
-        self.column_begin = self.dataset.attrs['Begin Pixel Number']
-        self.column_end = self.dataset.attrs['End Pixel Number']
-        self.set_geo_desc(geo_desc)
+#         self.file_path = file_path
+#         self.geo_desc = geo_desc
+        try:
+            self.dataset = xr.open_dataset(file_path)
+        except OSError: 
+            print('No such file or directory')
+            self.dataset =None
+            
+        else:
+            self.resolution = file_path[-15:-10]
+            self.line_begin = self.dataset.attrs['Begin Line Number']
+            self.line_end = self.dataset.attrs['End Line Number']
+            self.column_begin = self.dataset.attrs['Begin Pixel Number']
+            self.column_end = self.dataset.attrs['End Pixel Number']
+            self.set_geo_desc(geo_desc)
+    
+#     def readfile(self):
+#         self.dataset = xr.open_dataset(file_path)
+        
 
     def __del__(self):
         """
         确保关闭L1数据hdf5文件
         """
-        self.dataset.close()
+#         self.dataset.close()
+        if self.dataset is None:
+            sys.exit(1)
+        else:
+            self.dataset.close()
         
     def set_geo_desc(self, geo_desc):
         if geo_desc is None:
@@ -119,6 +135,9 @@ def read_fy4a_arr(h5name,geo_range):
 # geo_desc = [5, 54.95, 70, 139.95, 0.05]  # 顺序为南、北、西、东、分辨率，即[lat_s, lat_n, lon_w, lon_e, resolution]
 
     file = AGRI_L1(h5name, geo_range)
+    if file.dataset is None:
+        print('error opening the file %s'%h5name)
+        sys.exit(1)
     channels = CONTENTS['4000M']
     bands_list=[]
     for channel in channels:

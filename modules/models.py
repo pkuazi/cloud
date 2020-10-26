@@ -96,7 +96,7 @@ class OrigImgdataset(Dataset):
     
 class preddataset(Dataset):
     def __init__(self, file_path=None):
-        super(dataset, self).__init__()
+        super(preddataset, self).__init__()
         self.img = file_path
 #         self.img = [x.replace('/gt/', '/imgs/') for x in self.gt]
 

@@ -23,8 +23,8 @@ fy4a_root = os.path.join(config.data_path,'fy4a')
 h08_root = os.path.join(config.data_path,'h08')
 fy4a_tif = '/data/data/cloud_tif/img'
 h08_tif = '/data/data/cloud_tif/gt'
-# fy4a_tif = '/tmp/img'
-# h08_tif = '/tmp/gt'
+# fy4a_tif = '/tmp/'
+# h08_tif = '/tmp/'
 
 NP2GDAL_CONVERSION = {
   "uint8": 1,
@@ -140,14 +140,18 @@ def main():
                     if os.path.exists(fy4a_file): 
                         h08_dst = os.path.join(h08_tif, h08date + '_' + h08time + '.tif')
                         fy4a_dst = os.path.join(fy4a_tif, h08date + '_' + h08time + '.tif')
-                        try:
-                            preprocessh08(h08_file, h08_dst)
-                            preprocessfy4a(fy4a_file, fy4a_dst)
-                        except:
-                            continue
-                        else:
-                            tif_list = gen_file_list(h08_dst)
-                            tiles_list.append(tif_list)
+                        preprocessh08(h08_file, h08_dst)
+                        preprocessfy4a(fy4a_file, fy4a_dst)
+                        tif_list = gen_file_list(h08_dst)
+                        tiles_list.append(tif_list)
+#                         try:
+#                             preprocessh08(h08_file, h08_dst)
+#                             preprocessfy4a(fy4a_file, fy4a_dst)
+#                         except:
+#                             continue
+#                         else:
+#                             tif_list = gen_file_list(h08_dst)
+#                             tiles_list.append(tif_list)
     
     file = open('/tmp/files_list.txt','w');
     file.write(str(tiles_list));
