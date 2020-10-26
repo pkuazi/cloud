@@ -224,7 +224,7 @@ def gen_file_list(geotif):
 def main():
     tifs_dir = '/data/data/cloud_tif/img'
     tiles_dir = '/data/data/fy4a_tiles'
-    tifs_dir = config.test_path
+#     tifs_dir = config.test_path
 
 #     print('[%s] Start loading dataset using: %s.' % (datetime.now(), args.model.split('/')[-1]))
     st = datetime.now()
