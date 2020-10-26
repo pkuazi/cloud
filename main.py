@@ -239,18 +239,18 @@ def main():
     file = open('/tmp/files_offs_list.txt','w');
     file.write(str(files_offs_list));
     file.close();
-    print('the number of file+offs is %s, spend %s' % (len(files_offs_list), (et - st)))
+    print('the number of file+offs of %s is %s, spend %s' % (config.BLOCK_SIZE, len(files_offs_list), (et - st)))
     lapse = origimgloadtest(files_offs_list)
     print('Loading dataset from original image using: %s.' % (lapse))
     
-    st = datetime.now()
-    tiles = os.listdir(tiles_dir)
-    tiles_list = list(filter(lambda x: x.endswith(".tif") and x.split('_')[1]=='0330' , tiles))
-    et = datetime.now()
-    print('the number of tiles is %s, spend %s' % (len(tiles_list), (et - st)))
-#     lapse1 = test_loader(tiles_list)
-    lapse1 =tileimgloadtest(tiles_list)
-    print('Loading dataset from tiles using: %s.' % (lapse1))
+#     st = datetime.now()
+#     tiles = os.listdir(tiles_dir)
+#     tiles_list = list(filter(lambda x: x.endswith(".tif") and x.split('_')[1]=='0330' , tiles))
+#     et = datetime.now()
+#     print('the number of tiles is %s, spend %s' % (len(tiles_list), (et - st)))
+# #     lapse1 = test_loader(tiles_list)
+#     lapse1 =tileimgloadtest(tiles_list)
+#     print('Loading dataset from tiles using: %s.' % (lapse1))
     
 if __name__ == '__main__':
     main()

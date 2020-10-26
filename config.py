@@ -8,7 +8,7 @@ if not os.path.exists("./cache/model/"): os.makedirs("./cache/model/")  # 存放
 config = edict()
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-config.BLOCK_SIZE = 224
+config.BLOCK_SIZE = 256
 config.OVERLAP_SIZE = 0
 # config.data_path = os.path.join(BASE_DIR,"data")
 config.data_path = '/data/data'
