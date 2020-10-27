@@ -67,13 +67,14 @@ class TileImgdataset(Dataset):
         return len(self.file_names)
         
 class OrigImgdataset(Dataset):
-    def __init__(self, config, files_names, shuffle=False):
+    def __init__(self, config, files_names, shuffle=False,normalize=True):
         logging.info("ImgloaderPostdam->__init__->begin:")
         random.seed(20201023)
         self.conf = config
         self.img_size_x = config.img_rows
         self.img_size_y = config.img_cols
         self.shuffle = shuffle
+        self.normalize=normalize
         self.file_names = files_names
         self.data_set = []
     def __len__(self):
@@ -88,7 +89,12 @@ class OrigImgdataset(Dataset):
         gtfile = os.path.join(config.gt_path, filename)
         imgds = gdal.Open(imgfile,gdal.GA_ReadOnly)
         gtds = gdal.Open(gtfile,gdal.GA_ReadOnly)
-        data_x = imgds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
+#         data_x = imgds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
+        data_x = imgds.ReadAsArray(0, yoff, imgds.RasterXSize, config.BLOCK_SIZE)
+        data_x = data_x[xoff:xoff+config.BLOCK_SIZE,:]
+        if self.normalize:
+            tmp = np.zeros(data_x.shape, dtype=np.float32)
+            data_x = cv2.normalize(x,tmp,alpha=0, beta=1, norm_type=cv2.NORM_MINMAX,dtype=cv2.CV_32F)
         data_y = gtds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
         data_x = torch.torch.FloatTensor(data_x)
         data_y = torch.LongTensor(data_y)

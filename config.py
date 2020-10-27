@@ -10,8 +10,8 @@ config = edict()
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 config.BLOCK_SIZE = 256
 config.OVERLAP_SIZE = 0
-config.data_path = os.path.join(BASE_DIR,"data")
-# config.data_path = '/data/data'
+# config.data_path = os.path.join(BASE_DIR,"data")
+config.data_path = '/data/data/cloud_tif'
 config.img_path = '/data/data/cloud_tif/img'
 config.gt_path = '/data/data/cloud_tif/gt'
 
@@ -30,7 +30,8 @@ config.test_ori_imgs_dump_path = os.path.join(BASE_DIR,"data/test-set/imgs")
 config.model_path = os.path.join(BASE_DIR,"model/")
 config.results_path = os.path.join('/tmp','results/')
 config.in_channels=14
-config.class_num = 6
+# '0=Clear, 1=Ci, 2=Cs, 3=Deep convection, 4=Ac, 5=As, 6=Ns, 7=Cu, 8=Sc, 9=St, 10=Unknown, 255=Fill'
+config.class_num = 12
 config.img_rows = 224
 config.img_cols = 224
 # config.img_rows = 800
