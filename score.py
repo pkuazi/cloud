@@ -7,7 +7,7 @@ import os
 
 fy4afile = os.path.join(config.data_path, 'fy4a/20200731/FY4A-_AGRI--_N_REGC_1047E_L1-_FDI-_MULT_NOM_20200731033000_20200731033417_4000M_V0001.HDF')
 filename = fy4afile.split('/')[-1].split('.')[0]
-fy = h5py.File(os.path.join(config.results_path, '%s_CLT2.hdf' % filename), 'r')
+fy = h5py.File(os.path.join('/tmp', '%s_CLT2.hdf' % filename), 'r')
 pred_arr = fy['FY4CLT'][()]
 y_pred = pred_arr[99:, 300:-99]
 y_pred = y_pred.astype('int16')

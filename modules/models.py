@@ -89,9 +89,7 @@ class OrigImgdataset(Dataset):
         gtfile = os.path.join(config.gt_path, filename)
         imgds = gdal.Open(imgfile,gdal.GA_ReadOnly)
         gtds = gdal.Open(gtfile,gdal.GA_ReadOnly)
-#         data_x = imgds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
-        data_x = imgds.ReadAsArray(0, yoff, imgds.RasterXSize, config.BLOCK_SIZE)
-        data_x = data_x[xoff:xoff+config.BLOCK_SIZE,:]
+        data_x = imgds.ReadAsArray(xoff, yoff, config.BLOCK_SIZE, config.BLOCK_SIZE)
         if self.normalize:
             tmp = np.zeros(data_x.shape, dtype=np.float32)
             data_x = cv2.normalize(data_x,tmp,alpha=0, beta=1, norm_type=cv2.NORM_MINMAX,dtype=cv2.CV_32F)

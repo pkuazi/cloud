@@ -385,6 +385,42 @@ def main():
     pred_y = np.argmax(prob, axis=1)
     print(pred_y)
     save_pred_imgs(pred_y, test_file_names)
+
+def gen_tiles_offs(xsize, ysize, BLOCK_SIZE,OVERLAP_SIZE):
+    xoff_list = []
+    yoff_list = []
     
+    cnum_tile = int((xsize - BLOCK_SIZE) / (BLOCK_SIZE - OVERLAP_SIZE)) + 1
+    for j in range(cnum_tile + 1):
+        xoff = 0 + (BLOCK_SIZE - OVERLAP_SIZE) * j      
+            # the last column                 
+        if j == cnum_tile:
+            xoff = xsize - BLOCK_SIZE
+            # the last row
+        xoff_list.append(xoff)
+        
+    rnum_tile = int((ysize - BLOCK_SIZE) / (BLOCK_SIZE - OVERLAP_SIZE)) + 1
+    for i in range(rnum_tile + 1):
+        yoff = 0 + (BLOCK_SIZE - OVERLAP_SIZE) * i
+        if i == rnum_tile:
+            yoff = ysize - BLOCK_SIZE
+        yoff_list.append(yoff)
+    
+    if xoff_list[-1]==xoff_list[-2]:
+        xoff_list.pop()
+    if yoff_list[-1]==yoff_list[-2]:# the last tile overlap with the last second tile
+        yoff_list.pop()
+
+    return xoff_list, yoff_list
 if __name__ == '__main__':
-    test()
+    x_win=256
+    y_win=256
+    batch_size = 8
+    file = '/tmp/test1.tif'
+    tif_list = gen_file_list(file)
+    ds = gdal.Open(file)
+    num_row = batch_size/len(yoff_list)+1
+    for i in range(batch_size):
+        print(i%len(xoff_list), i/len(yoff_list))
+        tile = ds.ReadAsArray(xoff_list[i%len(xoff_list)],yoff_list[i/len(yoff_list)])
+    

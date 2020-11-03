@@ -254,22 +254,26 @@ if __name__ == '__main__':
 #         tile_pred = predict.cpu().numpy()
         pred_arr[yoff:yoff+config.BLOCK_SIZE,xoff:xoff+config.BLOCK_SIZE]=pred_list[i].cpu().numpy()
     
-    dst_hdf = os.path.join(config.results_path,'%s_CLT2.hdf'%filename)
+    dst_hdf = os.path.join('/tmp','%s_CLT2.hdf'%filename)
     #HDF5的写入：    
     f = h5py.File(dst_hdf,'w')   #创建一个h5文件，文件指针是f  
     f['FY4CLT'] = pred_arr                 #将数据写入文件的主键'FY4CLT'下面    
     f.close() 
     
-    dst_file = '/tmp/clt2.tif'
-    dataType = NP2GDAL_CONVERSION[str(pred_arr.dtype)]
-    gt = fy4a_gt 
-
-    dst_format = 'GTiff'
-    driver = gdal.GetDriverByName(dst_format)
-    dst_ds = driver.Create(dst_file, ysize, xsize, 1, dataType)
-    dst_ds.SetGeoTransform(gt)
-    dst_ds.SetProjection(epsg2wkt('EPSG:4326'))
-    dst_ds.GetRasterBand(1).WriteArray(pred_arr)
+    shpfile = '/mnt/win/code/dataservice/cloud/data/map/China_province.shp'
+    geo_range_str = '5, 54.95, 70, 139.95, 0.05'
+    dstfig = '/tmp/%s_Img.tif'%filename
+    draw(dst_hdf, shpfile,geo_range_str,dstfig)
+    
+#     dst_file = '/tmp/clt2.tif'
+#     dataType = NP2GDAL_CONVERSION[str(pred_arr.dtype)]
+#     gt = fy4a_gt
+#     dst_format = 'GTiff'
+#     driver = gdal.GetDriverByName(dst_format)
+#     dst_ds = driver.Create(dst_file, ysize, xsize, 1, dataType)
+#     dst_ds.SetGeoTransform(gt)
+#     dst_ds.SetProjection(epsg2wkt('EPSG:4326'))
+#     dst_ds.GetRasterBand(1).WriteArray(pred_arr)
     
     
 

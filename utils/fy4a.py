@@ -147,7 +147,7 @@ def read_fy4a_arr(h5name,geo_range):
         if channel_num>6:
             bands_list.append(file.extract(channel, calibration='brightness_temperature'))
         
-    imgarr = np.stack(band for band in bands_list)
+    imgarr = np.stack([band for band in bands_list])
 #     print(imgarr.shape)    
        
     return imgarr
